@@ -3,14 +3,14 @@ from flask import render_template
 from flask import request
 from flask import redirect
 import user_management as dbHandler
-
+import check_n_sanitise as check
 # Code snippet for logging a message
 # app.logger.critical("message")
 
 app = Flask(__name__)
 
 
-@app.route("/success.html", methods=["POST", "GET", "PUT", "PATCH", "DELETE"])
+@app.route("/success.html", methods=["POST", "GET"])
 def addFeedback():
     if request.method == "GET" and request.args.get("url"):
         url = request.args.get("url", "")
@@ -25,7 +25,7 @@ def addFeedback():
         return render_template("/success.html", state=True, value="Back")
 
 
-@app.route("/signup.html", methods=["POST", "GET", "PUT", "PATCH", "DELETE"])
+@app.route("/signup.html", methods=["POST", "GET"])
 def signup():
     if request.method == "GET" and request.args.get("url"):
         url = request.args.get("url", "")
@@ -33,8 +33,9 @@ def signup():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        DoB = request.form["dob"]
-        dbHandler.insertUser(username, password, DoB)
+        if check.check_password(password):
+            return password
+        dbHandler.insertUser(username, password)
         return render_template("/index.html")
     else:
         return render_template("/signup.html")
